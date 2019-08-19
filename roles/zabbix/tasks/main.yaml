@@ -1,0 +1,12 @@
+---
+- name: Deploy zabbix-mariadb
+  include_tasks: zabbix-mariadb.yaml
+
+- name: Deploy zabbix-server
+  include_tasks: zabbix-server.yaml
+
+- name: Deploy zabbix-web
+  include_tasks: zabbix-web.yaml
+
+- name: Deploy zabbix-agent
+  include_tasks: zabbix-agent.yaml

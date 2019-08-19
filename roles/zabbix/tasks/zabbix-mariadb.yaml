@@ -1,0 +1,60 @@
+- name: Deploy zabbix-mariadb
+  openshift_raw:
+    host: https://192.168.99.104:8443
+    verify_ssl: no
+    api_key: "{{ api_key }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        name: zabbix-mariadb-ansible
+        labels:
+          app: zabbix
+          service: zabbix_service
+        namespace: demo1
+      spec:
+        replicas: 1
+        template:
+          metadata:
+            labels:
+              app: zabbix
+              service: zabbix-mariadb
+          spec:
+            containers:
+              - name: zabbix-mariadb
+                ports:
+                - containerPort: 3306
+                  protocol: TCP
+                image: mariadb
+                env:
+                - name: MYSQL_ROOT_PASSWORD
+                  value: pass
+                - name: MYSQL_DATABASE
+                  value: zabbix
+                - name: MYSQL_USER
+                  value: zabbix
+                - name: MYSQL_PASSWORD
+                  value: zabbix
+
+- name: Instll zabbix-mariadb service
+  openshift_raw:
+    host: https://192.168.99.104:8443
+    verify_ssl: no
+    api_key: "{{ api_key }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: zabbix-mariadb
+        namespace: demo1
+      spec:
+        selector:
+          service: zabbix-mariadb
+        ports:
+          - name: 3306-tcp
+            protocol: TCP
+            port: 3306
+            targetPort: 3306
+        type: ClusterIP

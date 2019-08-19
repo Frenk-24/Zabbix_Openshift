@@ -1,0 +1,58 @@
+- name: Deploy zabbix-server
+  openshift_raw:
+    host: https://192.168.99.104:8443
+    verify_ssl: no
+    api_key: "{{ api_key }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        name: zabbix-server-ansible
+        labels:
+          app: zabbix
+          service: zabbix_service
+        namespace: demo1
+      spec:
+        replicas: 1
+        template:
+          metadata:
+            labels:
+              app: zabbix
+              service: zabbix-server
+          spec:
+            containers:
+              - name: zabbix-server
+                ports:
+                - containerPort: 10051
+                  protocol: TCP
+                image: zabbix/zabbix-server-mysql:centos-4.2-latest
+                env:
+                - name: MYSQL_USER
+                  value: root
+                - name: MYSQL_PASSWORD
+                  value: pass
+                - name: DB_SERVER_HOST
+                  value: zabbix-mariadb
+
+- name: Instll zabbix-server service
+  openshift_raw:
+    host: https://192.168.99.104:8443
+    verify_ssl: no
+    api_key: "{{ api_key }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: zabbix-server
+        namespace: demo1
+      spec:
+        selector:
+          service: zabbix-server
+        ports:
+          - name: 10051-tcp
+            protocol: TCP
+            port: 10051
+            targetPort: 10051
+        type: ClusterIP
